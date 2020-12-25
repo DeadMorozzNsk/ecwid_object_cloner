@@ -4,6 +4,9 @@ import org.ecwid.cloner.cloneables.Man;
 
 import java.util.Arrays;
 
+/**
+ * Лаборатория по клонированию
+ */
 public class CloneLab {
     public static void main(String[] args) {
         Man man1= new Man("John", 31, Arrays.asList("1984", "Effective Java. Third Edition"));

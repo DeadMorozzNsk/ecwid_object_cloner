@@ -27,6 +27,7 @@ class CloneLabTest {
         Cloner cloner = new Cloner();
         DollySheep dolly1 = new DollySheep("Dolly1", 1, "Black");
         DollySheep dolly2 = new DollySheep("Dolly2", 2, "White");
+        dolly1.getFriends().put(dolly2.getName(), dolly2);
         dolly1.getParents().add(dolly2);
         DollySheep dolly = Cloner.deepCopy(dolly1);
         Assertions.assertNotNull(dolly);

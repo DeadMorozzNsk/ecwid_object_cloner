@@ -1,14 +1,16 @@
 package org.ecwid.cloner.cloneables;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
+/**
+ * овечка Долли для клонирования
+ */
 public class DollySheep {
     private String name;
     private int age;
     private String furColor;
     private List<DollySheep> parents;
+    private Map<String, DollySheep> friends;
 
     public DollySheep(String name, int age, String furColor) {
         this.name = name;
@@ -31,7 +33,17 @@ public class DollySheep {
     public DollySheep() {
     }
 
+    public Map<String, DollySheep> getFriends() {
+        if (friends == null) friends = new HashMap<>(2);
+        return friends;
+    }
+
+    public void setFriends(Map<String, DollySheep> friends) {
+        this.friends = friends;
+    }
+
     public String getName() {
+        if (name == null) name = "";
         return name;
     }
 

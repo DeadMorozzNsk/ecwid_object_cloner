@@ -3,6 +3,9 @@ package org.ecwid.cloner.cloneables;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * клонировать людей запрещено, но программистам все равно =)
+ */
 public class Man {
     private String name;
     private int age;

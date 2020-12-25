@@ -5,12 +5,22 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+/**
+ * Класс-утилита для копирования объектов
+ */
 public class Cloner {
     private static final ClassDefiner definer = new ClassDefiner();
 
     public Cloner() {
     }
 
+    /**
+     * Позволяет сделать глубокую копию объекта (по субъективному мнению автора)
+     *
+     * @param obj Объект копирования
+     * @param <T> Класс копирования
+     * @return копия переданного в метод объекта
+     */
     public static <T> T deepCopy(T obj) {
         if (obj.getClass().equals(String.class)) return obj;
         try {
@@ -28,7 +38,7 @@ public class Cloner {
                 } else if (cls.equals(List.class)) {
                     args.add(new ArrayList<>());
                 } else if (cls.equals(Map.class)) {
-                    args.add(new HashSet<>());
+                    args.add(new HashMap<>());
                 } else if (cls.equals(Set.class)) {
                     args.add(new HashSet<>());
                 } else if (cls.equals(Collection.class)) {
@@ -73,6 +83,18 @@ public class Cloner {
                             target[i] = deepCopy(objects[i]);
                         }
                         field.set(clone, target);
+                    } else if (definer.isSet()) {
+                        Set src = (Set) field.get(obj);
+                        Set target = new HashSet(src.size());
+                        for (Object o : src) {
+                            target.add(deepCopy(o));
+                        }
+                        field.set(clone, target);
+                    } else if (definer.isMap()) {
+                        Map src = (Map) field.get(obj);
+                        Map target = new HashMap(src.size());
+                        src.forEach((k, v) -> target.put(deepCopy(k),deepCopy(v)));
+                        field.set(clone, target);
                     } else {
                         field.set(clone, deepCopy(field.get(obj)));
                     }
@@ -88,6 +110,9 @@ public class Cloner {
 
 }
 
+/**
+ * вспомогательный класс для, надеюсь, упрощения читаемости кода =)
+ */
 class ClassDefiner {
     private boolean array;
     private boolean list;
