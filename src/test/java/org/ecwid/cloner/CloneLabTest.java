@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class CloneLabTest {
 
     @Test
@@ -24,7 +22,6 @@ class CloneLabTest {
 
     @Test
     public void testSheepCloning() {
-        Cloner cloner = new Cloner();
         DollySheep dolly1 = new DollySheep("Dolly1", 1, "Black");
         DollySheep dolly2 = new DollySheep("Dolly2", 2, "White");
         dolly1.getFriends().put(dolly2.getName(), dolly2);
