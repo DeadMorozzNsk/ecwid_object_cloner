@@ -6,11 +6,12 @@ import java.util.*;
  * овечка Долли для клонирования
  */
 public class DollySheep {
-    private String name ="";
-    private int age = 0;
-    private String furColor = "";
-    private List<DollySheep> parents= new ArrayList<>(2);
-    private Map<String, DollySheep> friends = new HashMap<>(2);
+    private final int CAPACITY = 2;
+    private String name;
+    private int age;
+    private String furColor;
+    private List<DollySheep> parents= new ArrayList<>(CAPACITY);
+    private Map<String, DollySheep> friends = new HashMap<>(CAPACITY);
 
     public DollySheep(String name, int age, String furColor) {
         this.name = name;
@@ -34,7 +35,7 @@ public class DollySheep {
     }
 
     public Map<String, DollySheep> getFriends() {
-        if (friends == null) friends = new HashMap<>(2);
+        if (friends == null) friends = new HashMap<>(CAPACITY);
         return friends;
     }
 
@@ -56,7 +57,7 @@ public class DollySheep {
     }
 
     public List<DollySheep> getParents() {
-        if (parents == null) parents = new ArrayList<>(2);
+        if (parents == null) parents = new ArrayList<>(CAPACITY);
         return parents;
     }
 

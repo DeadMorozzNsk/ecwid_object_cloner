@@ -14,17 +14,26 @@ public class Cloner {
     public Cloner() {
     }
 
-    public static <T> T deepCopy(T obj) {
+    /**
+     * Создает полную копию объекта с учетом вложенности объектов внутри объекта <b>object</b>,
+     * предаваемого в качестве аргумента.
+     *
+     * @param object Объект копирования.
+     * @return копия переданного в метод объекта без ссылок на оригинал.
+     */
+    public static <T> T deepCopy(T object) {
         Map<Object, Object> copies = new HashMap<>(10);
-        return deepCopy(obj, copies);
+        return deepCopy(object, copies);
     }
 
     /**
-     * Позволяет сделать глубокую копию объекта (по субъективному мнению автора)
+     * Создает новый экземпляр класса <b>T</b> передаваемого в метод объекта <b>obj</b>.
+     * Рекурсивно обходит поля и вложенные объекты. Ссылки на вложенные объекты и их копии помещает
+     * в мэппинг для воспроизведения вложенности в копируемом объекте.
      *
-     * @param obj Объект копирования
-     * @param <T> Класс копирования
-     * @return копия переданного в метод объекта
+     * @param obj    Объект копирования.
+     * @param copies мэппинг созданных копий.
+     * @return копия переданного в метод объекта без ссылок на оригинал.
      */
     private static <T> T deepCopy(T obj, Map<Object, Object> copies) {
         if (obj.getClass().equals(String.class)) return obj;
