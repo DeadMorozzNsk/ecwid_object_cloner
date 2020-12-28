@@ -14,6 +14,11 @@ public class Cloner {
     public Cloner() {
     }
 
+    public static <T> T deepCopy(T obj) {
+        Map<Object, Object> copies = new HashMap<>(10);
+        return deepCopy(obj, copies);
+    }
+
     /**
      * Позволяет сделать глубокую копию объекта (по субъективному мнению автора)
      *
@@ -21,14 +26,14 @@ public class Cloner {
      * @param <T> Класс копирования
      * @return копия переданного в метод объекта
      */
-    public static <T> T deepCopy(T obj) {
+    private static <T> T deepCopy(T obj, Map<Object, Object> copies) {
         if (obj.getClass().equals(String.class)) return obj;
         try {
             Constructor<T>[] constructors = (Constructor<T>[]) obj.getClass().getDeclaredConstructors();
-            Class[] paramTypes = constructors[0].getParameterTypes();
-
+            Class<?>[] paramTypes = constructors[0].getParameterTypes();
+            /* формируем список аргументов первого попавшегося конструктора */
             List<Object> args = new ArrayList<>();
-            for (Class cls : paramTypes) {
+            for (Class<?> cls : paramTypes) {
                 if (cls.isPrimitive()) {
                     args.add(0);
                 } else if (cls.equals(String.class)) {
@@ -49,12 +54,9 @@ public class Cloner {
             }
 
             T clone = constructors[0].newInstance(args.toArray());
+            copies.put(obj, clone);
             for (Field field : obj.getClass().getDeclaredFields()) {
-                boolean closeAccess = false;
-                if (!field.canAccess(obj)) {
-                    field.setAccessible(true);
-                    closeAccess = true;
-                }
+                field.setAccessible(true);
                 if (field.get(obj) == null || Modifier.isFinal(field.getModifiers())) {
                     continue;
                 }
@@ -67,39 +69,51 @@ public class Cloner {
                 } else {
                     Object childObj = field.get(obj);
                     definer.define(field.getType());
-                    if (childObj == obj) {
+                    if (childObj == obj || childObj.equals(obj)) {
                         field.set(clone, clone);
                     } else if (definer.isList()) {
-                        List src = (List) field.get(obj);
-                        List list = new ArrayList(src.size());
-                        for (int i = 0; i < src.size(); i++) {
-                            list.add(deepCopy(src.get(i)));
+                        List<Object> src = (List<Object>) childObj;
+                        List<Object> list = new ArrayList<>(src.size());
+                        for (Object current : src) {
+                            if (copies.containsKey(current)) {
+                                list.add(copies.get(current));
+                            } else {
+                                list.add(deepCopy(current, copies));
+                            }
                         }
                         field.set(clone, list);
                     } else if (definer.isArray()) {
-                        Object[] objects = (Object[]) field.get(obj);
+                        Object[] objects = (Object[]) childObj;
                         Object[] target = new Object[objects.length];
                         for (int i = 0; i < objects.length; i++) {
-                            target[i] = deepCopy(objects[i]);
+                            target[i] = deepCopy(objects[i], copies);
                         }
                         field.set(clone, target);
                     } else if (definer.isSet()) {
-                        Set src = (Set) field.get(obj);
-                        Set target = new HashSet(src.size());
+                        Set<Object> src = (Set<Object>) childObj;
+                        Set<Object> target = new HashSet<>(src.size());
                         for (Object o : src) {
-                            target.add(deepCopy(o));
+                            if (copies.containsKey(o))
+                                target.add(copies.get(o));
+                            else
+                                target.add(deepCopy(o, copies));
                         }
                         field.set(clone, target);
                     } else if (definer.isMap()) {
-                        Map src = (Map) field.get(obj);
-                        Map target = new HashMap(src.size());
-                        src.forEach((k, v) -> target.put(deepCopy(k),deepCopy(v)));
+                        Map<Object, Object> src = (Map<Object, Object>) childObj;
+                        Map<Object, Object> target = new HashMap<>(src.size());
+                        src.forEach((k, v) -> {
+                            if (copies.containsKey(k)) k = copies.get(k);
+                            else k = deepCopy(k, copies);
+                            if (copies.containsKey(v)) v = copies.get(v);
+                            else v = deepCopy(v, copies);
+                            target.put(k, v);
+                        });
                         field.set(clone, target);
                     } else {
-                        field.set(clone, deepCopy(field.get(obj)));
+                        field.set(clone, deepCopy(field.get(obj), copies));
                     }
                 }
-                if (closeAccess) field.setAccessible(false);
             }
             return clone;
         } catch (Exception e) {
@@ -120,14 +134,12 @@ class ClassDefiner {
     private boolean set;
     private boolean collection;
 
-    public ClassDefiner define(Class cl) {
+    public void define(Class<?> cl) {
         array = cl.getName().contains("[");
         list = cl.equals(List.class);
         map = cl.equals(Map.class);
         set = cl.equals(Set.class);
         collection = cl.equals(Collection.class);
-
-        return this;
     }
 
     public boolean isArray() {
